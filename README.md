@@ -57,11 +57,6 @@ Desenvolver uma API REST para uma Loja Virtual Simplificada que permita:
 - Validações com anotações (`@NotNull`, `@Positive`, etc.)
 - Mensagens de erro amigáveis para o usuário
 - Logging básico para facilitar diagnóstico
-- Aplicação dos pilares da Programação Orientada a Objetos (POO)
-- Separação clara de responsabilidades entre Controller, Service e Repository
-- Persistência e comunicação com banco de dados usando Spring Data JPA
-- Deploy local automatizado via Docker e Docker Compose
-- Testes funcionais com ferramentas como Postman ou Insomnia
 
 ---
 
