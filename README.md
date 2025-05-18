@@ -73,3 +73,7 @@ Desenvolver uma API REST para uma Loja Virtual Simplificada que permita:
 - Comunicação com banco de dados
 - Deploy local com Docker e Docker Compose
 - Testar com Postman/Insomnia
+
+---
+
+- Branch para pull requests: branch-0001
