@@ -8,6 +8,6 @@ public class TesteController {
 
     @GetMapping("/")
     public String testePage() {
-        return "PAGINA DE TESTE FUNCIONANDO";
+        return "TESTE FUNCIONANDO";
     }
 }
