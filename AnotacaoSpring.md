@@ -344,3 +344,151 @@ public class ProdutoException extends RuntimeException {
 "Produto com ID " + id + " não encontrado."
 
 - Isso facilita o entendimento do erro ao ser lançado e exibido no log ou para o usuário.
+
+---
+
+# Classe Controller - ProdutoController
+
+```java
+@RestController // marca como controller REST
+@RequestMapping("/produtos") // define o prefixo da rota
+public class ProdutoController {
+    
+}
+```
+
+### Finalidade
+- A classe ProdutoController é responsável por expor os endpoints da API REST relacionados ao recurso Produto, atuando como a camada de controle entre o cliente (frontend ou outro serviço) e a lógica de negócio contida no ProdutoService.
+
+🔹 Anotações Usadas
+- @RestController:
+- Indica que essa classe é um controller REST, e que os métodos anotados retornarão diretamente os dados no corpo da resposta (sem necessidade de @ResponseBody em cada método). <br> <br>
+
+- @RequestMapping("/produtos"):
+- Define o caminho base de todos os endpoints da classe como /produtos.
+
+🔹 Injeção de Dependência
+
+```java
+@Autowired
+private ProdutoService produtoService;
+```
+
+- O ProdutoService é injetado automaticamente pelo Spring para que o controller possa delegar a lógica de negócio ao service.
+
+### Métodos e Endpoints
+
+🔹 **POST /produtos — Criar Produto**
+
+```java
+@PostMapping
+public ResponseEntity<ProdutoDTO> criarProdutos(@Valid @RequestBody ProdutoDTO produtoDTO) {
+    ProdutoDTO produtoCadastrado = produtoService.cadastrarProduto(produtoDTO);
+    return ResponseEntity.status(HttpStatus.CREATED).body(produtoCadastrado);
+}
+```
+
+- Recebe os dados do produto via JSON.
+
+- Valida os dados com @Valid.
+
+- Retorna status 201 Created com o produto criado no corpo da resposta. <br> <br>
+
+- ResponseEntity.status(HttpStatus.CREATED)
+  - Cria um builder para uma resposta HTTP com status 201 Created. <br> <br>
+
+- .body(produtoCadastrado)
+  - Define que o corpo da resposta será o objeto produtoCadastrado (serializado como JSON automaticamente pelo Spring, pois é um @RestController). <br> <br>
+
+🔹 **GET /produtos — Listar Todos os Produtos**
+
+```java
+@GetMapping
+public ResponseEntity<List<ProdutoDTO>> listarProdutos() {
+    return ResponseEntity.ok(produtoService.listarTodosProdutos());
+}
+```
+
+- Retorna todos os produtos cadastrados.
+
+- Usa ResponseEntity.ok(...) para retornar status 200 OK.
+
+- O corpo da resposta contém uma lista de produtos em formato JSON. <br> <br>
+
+🔹 **GET /produtos/{id} — Buscar Produto por ID**
+
+```java
+@GetMapping("/{id}")
+public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
+    return ResponseEntity.ok(produtoService.buscarProdutoPorId(id));
+}
+```
+
+- Extrai o id do produto da URL com @PathVariable.
+
+- Busca o produto correspondente no banco de dados.
+
+- Retorna:
+
+  - 200 OK se o produto for encontrado.
+
+  - Uma exceção (como ProdutoException) pode ser lançada se não encontrado.
+
+- O corpo da resposta contém o produto encontrado, convertido em JSON. <br> <br>
+
+🔹 **PUT /produtos/{id} — Atualizar Produto por ID**
+
+```java
+@PutMapping("/{id}")
+public ResponseEntity<ProdutoDTO> atualizarProduto(@PathVariable Long id, @Valid @RequestBody ProdutoDTO produtoDTO) {
+    return ResponseEntity.ok(produtoService.atualizarProdutoPorId(id, produtoDTO));
+}
+```
+
+- Recebe o id pela URL e os novos dados do produto no corpo (JSON).
+
+- Valida os dados com @Valid.
+
+- Atualiza o produto existente com os novos dados.
+
+- Retorna 200 OK com o produto atualizado no corpo da resposta. <br> <br>
+
+🔹 **DELETE /produtos/{id} — Deletar Produto por ID**
+
+```java
+@DeleteMapping("/{id}")
+public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
+    produtoService.deletarProdutoPorId(id);
+    return ResponseEntity.noContent().build();
+}
+```
+
+- Extrai o id do produto da URL.
+
+- Remove o produto correspondente do banco de dados.
+
+- Retorna 204 No Content, indicando sucesso, mas sem corpo na resposta.
+
+## Códigos de Status HTTP Comuns em REST APIs
+
+| Código | Nome                  | Quando usar                                                        |
+|--------|-----------------------|-------------------------------------------------------------------|
+| 200    | OK                    | Requisição bem-sucedida. Usado para GET, PUT, ou DELETE com corpo de resposta. |
+| 201    | Created               | Recurso criado com sucesso. Usado em POST quando um novo recurso é criado. |
+| 204    | No Content            | Requisição bem-sucedida, mas sem conteúdo na resposta. Comum em DELETE ou PUT. |
+| 400    | Bad Request           | Requisição malformada ou com dados inválidos. Pode ocorrer por erro de validação. |
+| 401    | Unauthorized          | O cliente não está autenticado. Usuário precisa fazer login/autenticação. |
+| 403    | Forbidden             | Cliente autenticado, mas não tem permissão para acessar o recurso. |
+| 404    | Not Found             | Recurso não encontrado. Exemplo: produto com ID inexistente.      |
+| 409    | Conflict              | Conflito ao tentar criar/atualizar um recurso. Ex: nome duplicado.|
+| 500    | Internal Server Error | Erro inesperado no servidor. Pode ser exceção não tratada.        |
+
+### Como seu controller se comporta com esses códigos:
+
+- `@GetMapping`, `@PutMapping`, `@DeleteMapping` → retornam **200 OK** ou **204 No Content**.
+
+- `@PostMapping` → retorna **201 Created**.
+
+- Exceções como `ProdutoException` → você pode configurar para que retornem **404 Not Found** com uma `@ControllerAdvice`.
+
+- Erros de validação com `@Valid` → retornam **400 Bad Request** automaticamente pelo Spring Boot.

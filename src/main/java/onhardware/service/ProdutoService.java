@@ -19,7 +19,7 @@ public class ProdutoService {
 
     private Produto paraEntity(ProdutoDTO produtoDTO) {
         return Produto.builder()
-                .idProduto(produtoDTO.getIdProduto())
+               // .idProduto(produtoDTO.getIdProduto())
                 .nomeProduto(produtoDTO.getNomeProduto())
                 .marcaProduto(produtoDTO.getMarcaProduto())
                 .modeloProduto(produtoDTO.getModeloProduto())
