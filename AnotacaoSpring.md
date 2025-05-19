@@ -7,70 +7,96 @@
 ```java
 @Data
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "produtos")
 public class Produto {
-    
+  // atributos...
 }
+
 ```
 
-🔹 @Data (Lombok)
-- Gera automaticamente os métodos:
-getters, setters, toString(), equals() e hashCode(). <br> </br>
+🔹 @Data (do Lombok)
+- Gera automaticamente:
 
-- Evita repetição de código padrão (boilerplate). 
+- getters e setters
 
-🔹 @Entity (JPA)
-- Indica que essa classe é uma entidade JPA, ou seja, será mapeada para uma tabela no banco de dados.
+- toString()
+
+- equals() e hashCode()
+
+🔸 Objetivo: evitar código repetitivo (boilerplate) e manter a classe limpa e legível.
+
+🔹 @Entity (do JPA)
+- Indica que essa classe representa uma entidade do banco de dados.
+
+- Cada instância será um registro (linha) na tabela correspondente.
+
+🔹 @Table(name = "produtos")
+- Define o nome da tabela no banco como produtos.
+
+- Sem essa anotação, o nome da tabela seria produto por padrão (nome da classe).
+
+🔹 @NoArgsConstructor (do Lombok)
+- Gera automaticamente um construtor sem argumentos.
+
+- Necessário para o JPA criar instâncias da entidade via reflexão.
+
+🔹 @AllArgsConstructor (do Lombok)
+- Gera automaticamente um construtor com todos os atributos como parâmetros.
+
+🔹 @Builder (do Lombok)
+- Permite criar objetos da classe usando o padrão de projeto Builder:
+
+```java
+Produto produto = Produto.builder()
+.nomeProduto("Monitor LG")
+.marcaProduto("LG")
+.modeloProduto("UltraWide")
+.precoProduto(new BigDecimal("1999.90"))
+.build();
+```
 
 ### Chave Primária
     
 ```java
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-private long idProduto; 
+private long idProduto;
 ```
 
-- @Id: Define que o campo é a chave primária. <br> </br>
+- @Id: Define que o campo é a chave primária.
 
 - @GeneratedValue(strategy = GenerationType.IDENTITY):
 O valor do ID será gerado automaticamente pelo banco de dados (auto-incremento).
 
-### Atributos com Validação
+### Campos Obrigatórios
 
 ```java
-@NotBlank(message = "O nome do produto é obrigatório.")
 @Column(nullable = false)
 private String nomeProduto;
 ```
-
-- @NotBlank: Valor não pode ser nulo, vazio ou espaços em branco. <br> </br>
 
 - @Column(nullable = false): Campo obrigatório no banco de dados.
 
 ### Especificações do Produto
 
 ```java
-@NotBlank(message = "As especificações do produto são obrigatórias.")
-@Size(max = 300, message = "As especificações deve ter no máximo 300 caracteres.")
-@Column(nullable = false)
+@Column(nullable = false, length = 300)
 private String especificacaoProduto;
 ```
 
-- @Size(max = 300): Limita o tamanho máximo a 300 caracteres para proteger o banco e melhorar a usabilidade.
+- Obrigatório e com limite de até 300 caracteres.
 
 ### Proço do Produto
 
 ```java
-@NotNull(message = "O preço do produto é obrigatório.")
-@Positive(message = "O preço do produto deve ser maior que zero.")
 @Column(nullable = false)
 private BigDecimal precoProduto;
 ```
 
-- @NotNull: Garante que o campo não pode ser nulo. <br> </br>
-
-- @Positive: O valor deve ser maior que zero. <br> </br>
-
-- BigDecimal: Tipo ideal para representar valores monetários com precisão.
+- Valor obrigatório e representado com BigDecimal para precisão financeira.
 
 ### Data de Registro do Produto
 
@@ -81,15 +107,47 @@ private BigDecimal precoProduto;
 private LocalDateTime dataRegistroProduto;
 ```
 
-- @CreationTimestamp: O valor será preenchido automaticamente com a data e hora da criação do registro (Hibernate). <br> </br>
+- @CreationTimestamp: O valor será preenchido automaticamente com a data e hora da criação do registro (Hibernate).
 
-- @JsonFormat(...): Define o formato da data ao converter para JSON (ex: "19/05/2025 14:23:00"). <br> </br>
+- @JsonFormat(...): Define o formato da data ao converter para JSON (ex: "19/05/2025 14:23:00"). 
 
-- @Column(nullable = false, updatable = false): <br> </br>
+- @Column(nullable = false, updatable = false):
 
-  - Campo obrigatório no banco (nullable = false). <br> </br>
+  - Campo obrigatório no banco (nullable = false).
 
   - Não pode ser alterado depois de criado (updatable = false).
+
+---
+
+# Classe DTO - ProdutoDTO
+
+### Finalidade
+
+- A classe ProdutoDTO é usada para transferência de dados entre a aplicação e os consumidores da API (como controladores REST), separando a entidade Produto do que é exposto ou recebido externamente.
+
+### Anotações
+
+🔹 @Data (Lombok)
+- Gera automaticamente getters, setters, toString(), equals() e hashCode().
+
+🔹 @Builder (do Lombok)
+- Permite criar objetos da classe usando o padrão de projeto Builder:
+
+### Validações
+
+@NotBlank
+- Garante que o valor não seja nulo, vazio ou apenas espaços em branco.
+
+- Utilizado nos campos de texto (nomeProduto, marcaProduto, modeloProduto, especificacaoProduto).
+
+@Size(max = 300)
+- Limita o tamanho máximo da string especificacaoProduto a 300 caracteres.
+
+@NotNull
+- Garante que o campo precoProduto não seja nulo.
+
+@Positive
+- Garante que o preço seja maior que zero, evitando valores negativos ou zerados.
 
 ---
 
@@ -98,6 +156,7 @@ private LocalDateTime dataRegistroProduto;
 ```java
 @Service
 public class ProdutoService {
+    
     @Autowired
     private ProdutoRepository produtoRepository;
     
@@ -107,37 +166,84 @@ public class ProdutoService {
 
 🔹 @Service (Spring)
 
-- Indica que a classe é um serviço, um componente da camada de negócio da aplicação. <br> </br>
+- Indica que a classe é um serviço, um componente da camada de negócio da aplicação.
 
 - Permite que o Spring faça a injeção automática dessa classe onde for necessário.
 
 🔹 @Autowired
 
-- Injeta automaticamente o bean ProdutoRepository criado pelo Spring Data JPA para acessar o banco de dados. <br> </br>
+- Injeta automaticamente o bean ProdutoRepository criado pelo Spring Data JPA para acessar o banco de dados.
 
 - Permite usar o repositório para operações CRUD no banco.
+
+### Conversão entre DTO e Entidade
+
+- A classe ProdutoService utiliza dois métodos auxiliares privados para realizar a conversão entre ProdutoDTO (usado na comunicação com a API) e a entidade Produto (persistida no banco de dados):
+
+```java
+private Produto paraEntity(ProdutoDTO produtoDTO) {
+    return Produto.builder()
+          .idProduto(produtoDTO.getIdProduto())
+          .nomeProduto(produtoDTO.getNomeProduto())
+          .marcaProduto(produtoDTO.getMarcaProduto())
+          .modeloProduto(produtoDTO.getModeloProduto())
+          .especificacaoProduto(produtoDTO.getEspecificacaoProduto())
+          .precoProduto(produtoDTO.getPrecoProduto())
+          .build();
+}
+```
+- Converter um objeto ProdutoDTO em uma entidade Produto.
+- Transforma os dados recebidos da API (ProdutoDTO) em um objeto pronto para persistência com o builder. <br> </br> <br>
+
+```java
+private ProdutoDTO paraDTO(Produto produto) {
+    return ProdutoDTO.builder()
+          .idProduto(produto.getIdProduto())
+          .nomeProduto(produto.getNomeProduto())
+          .marcaProduto(produto.getMarcaProduto())
+          .modeloProduto(produto.getModeloProduto())
+          .especificacaoProduto(produto.getEspecificacaoProduto())
+          .precoProduto(produto.getPrecoProduto())
+          .build();
+}
+```
+- Converter uma entidade Produto em um objeto ProdutoDTO.
+- Transforma os dados persistidos da entidade em um DTO para ser exposto via API.
 
 ### Cadastrar Produto
 
 ```java
-public Produto cadastrarProduto(Produto produto) {
-    return produtoRepository.save(produto);
+public ProdutoDTO cadastrarProduto(ProdutoDTO produtoDTO) {
+    Produto produto = paraEntity(produtoDTO);
+    Produto produtoSalvo = produtoRepository.save(produto);
+    return paraDTO(produtoSalvo);
 }
 ```
 
-- Salva um novo produto no banco de dados. <br> </br>
+- Converte o DTO em entidade e salva no banco de dados.
 
-- Retorna o produto salvo, já com o ID gerado.
+- Retorna o produto salvo convertido novamente em DTO.
 
 ### Listar todos os produtos
 
 ```java
-public List<Produto> listarTodosProdutos() {
-    return produtoRepository.findAll();
+public List<ProdutoDTO> listarTodosProdutos() {
+    List<Produto> produtos = produtoRepository.findAll();
+    List<ProdutoDTO> produtoDTOs = new ArrayList<>();
+    
+    for (Produto produto : produtos) {
+        produtoDTOs.add(paraDTO(produto));
+    }
+    
+    return produtoDTOs;
 }
 ```
 
-- Busca e retorna todos os produtos cadastrados no banco.
+- Busca todos os produtos no banco de dados.
+
+- Converte cada produto da lista para DTO.
+
+- Retorna a lista de DTOs.
 
 ### Deletar produto por ID
 
@@ -152,58 +258,63 @@ public void deletarProdutoPorId(Long id) {
 }
 ```
 
-- Verifica se o produto existe no banco pelo ID. <br> </br>
+- Verifica se o produto existe no banco pelo ID.
 
-- Se não existir, lança uma exceção personalizada ProdutoException. <br> </br>
+- Se não existir, lança uma exceção personalizada ProdutoException.
 
 - Caso exista, deleta o produto.
 
 ### Buscar produto por ID
 
 ```java
-public Produto buscarProdutoPorId(Long id) {
+public ProdutoDTO buscarProdutoPorId(Long id) {
     Optional<Produto> optionalProduto = produtoRepository.findById(id);
     if (optionalProduto.isEmpty()) {
         throw new ProdutoException(id);
     }
     
-    return optionalProduto.get();
+    return paraDTO(optionalProduto.get());
 }
 ```
 
-- Busca um produto pelo seu ID. <br> </br>
+- Verifica se o produto existe pelo ID.
 
-- Se não encontrar, lança a exceção ProdutoException. <br> </br>
+- Se não existir, lança ProdutoException.
 
-- Caso encontre, retorna o produto.
+- Se existir, converte e retorna o produto em forma de DTO.
 
 ### Atualizar produto por ID
 
 ```java
-public Produto atualizarProdutoPorId(Long id, Produto produtoAtualizado) {
+public ProdutoDTO atualizarProdutoPorId(Long id, ProdutoDTO produtoDTO) {
     Optional<Produto> optionalProduto = produtoRepository.findById(id);
     if (optionalProduto.isEmpty()) {
         throw new ProdutoException(id);
     }
     
     Produto produto = optionalProduto.get();
+    produto.setNomeProduto(produtoDTO.getNomeProduto());
+    produto.setMarcaProduto(produtoDTO.getMarcaProduto());
+    produto.setModeloProduto(produtoDTO.getModeloProduto());
+    produto.setEspecificacaoProduto(produtoDTO.getEspecificacaoProduto());
+    produto.setPrecoProduto(produtoDTO.getPrecoProduto());
+    Produto produtoSalvo = produtoRepository.save(produto);
     
-    produto.setNomeProduto(produtoAtualizado.getNomeProduto());
-    produto.setMarcaProduto(produtoAtualizado.getMarcaProduto());
-    produto.setModeloProduto(produtoAtualizado.getModeloProduto());
-    produto.setEspecificacaoProduto(produtoAtualizado.getEspecificacaoProduto());
-    produto.setPrecoProduto(produtoAtualizado.getPrecoProduto());
-    return produtoRepository.save(produto);
+    return paraDTO(produtoSalvo);
 }
 ```
 
-- Verifica se o produto a ser atualizado existe. <br> </br>
+- Verifica se o produto existe pelo ID.
 
-- Se não existir, lança exceção. <br> </br>
+- Se não existir, lança ProdutoException.
 
-- Caso exista, atualiza os atributos do produto e salva a alteração no banco. <br> </br>
+- Se existir: 
 
-- Retorna o produto atualizado.
+  - Atualiza os dados do produto com base no DTO recebido.
+
+  - Salva a alteração no banco. 
+
+  - Retorna o produto atualizado como DTO.
 
 ---
 
@@ -219,17 +330,17 @@ public class ProdutoException extends RuntimeException {
 
 🔹 Extensão de RuntimeException
 
-- A classe herda de RuntimeException, que é uma exceção não verificada (unchecked). <br> </br>
+- A classe herda de RuntimeException, que é uma exceção não verificada (unchecked).
 
-- Não é obrigatório tratar ou declarar essa exceção nos métodos, simplificando o código. <br> </br>
+- Não é obrigatório tratar ou declarar essa exceção nos métodos, simplificando o código.
 
 - Ideal para situações em que a falha indica erro de lógica, como tentar acessar um produto inexistente.
 
 🔹 Construtor personalizado
 
-- Recebe o id do produto que causou a exceção. <br> </br>
+- Recebe o id do produto que causou a exceção.
 
 - Passa uma mensagem personalizada para a superclasse com o texto:
-"Produto com ID " + id + " não encontrado." <br> </br>
+"Produto com ID " + id + " não encontrado."
 
 - Isso facilita o entendimento do erro ao ser lançado e exibido no log ou para o usuário.

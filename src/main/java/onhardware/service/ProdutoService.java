@@ -17,34 +17,33 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    private Produto toEntity(ProdutoDTO produtoDTO) {
-        Produto produto = new Produto();
-        if (produtoDTO.getIdProduto() != null) {
-            produto.setIdProduto(produtoDTO.getIdProduto());
-        }
-
-        produto.setNomeProduto(produtoDTO.getNomeProduto());
-        produto.setMarcaProduto(produtoDTO.getMarcaProduto());
-        produto.setModeloProduto(produtoDTO.getModeloProduto());
-        produto.setEspecificacaoProduto(produtoDTO.getEspecificacaoProduto());
-        return produto;
+    private Produto paraEntity(ProdutoDTO produtoDTO) {
+        return Produto.builder()
+                .idProduto(produtoDTO.getIdProduto())
+                .nomeProduto(produtoDTO.getNomeProduto())
+                .marcaProduto(produtoDTO.getMarcaProduto())
+                .modeloProduto(produtoDTO.getModeloProduto())
+                .especificacaoProduto(produtoDTO.getEspecificacaoProduto())
+                .precoProduto(produtoDTO.getPrecoProduto())
+                .build();
     }
 
-    private ProdutoDTO toDTO(Produto produto) {
-        ProdutoDTO dto = new ProdutoDTO();
-        dto.setIdProduto(produto.getIdProduto());
-        dto.setNomeProduto(produto.getNomeProduto());
-        dto.setMarcaProduto(produto.getMarcaProduto());
-        dto.setModeloProduto(produto.getModeloProduto());
-        dto.setEspecificacaoProduto(produto.getEspecificacaoProduto());
-        dto.setPrecoProduto(produto.getPrecoProduto());
-        return dto;
+    private ProdutoDTO paraDTO(Produto produto) {
+        return ProdutoDTO.builder()
+                .idProduto(produto.getIdProduto())
+                .nomeProduto(produto.getNomeProduto())
+                .marcaProduto(produto.getMarcaProduto())
+                .modeloProduto(produto.getModeloProduto())
+                .especificacaoProduto(produto.getEspecificacaoProduto())
+                .precoProduto(produto.getPrecoProduto())
+                .build();
     }
 
     public ProdutoDTO cadastrarProduto(ProdutoDTO produtoDTO) {
-        Produto produto = toEntity(produtoDTO);
+        Produto produto = paraEntity(produtoDTO);
         Produto produtoSalvo = produtoRepository.save(produto);
-        return toDTO(produtoSalvo);
+
+        return paraDTO(produtoSalvo);
     }
 
     public List<ProdutoDTO> listarTodosProdutos() {
@@ -52,18 +51,18 @@ public class ProdutoService {
         List<ProdutoDTO> produtoDTOs = new ArrayList<>();
 
         for (Produto produto : produtos) {
-            produtoDTOs.add(toDTO(produto));
+            produtoDTOs.add(paraDTO(produto));
         }
 
         return produtoDTOs;
     }
-
 
     public void deletarProdutoPorId(Long id) {
         Optional<Produto> optionalProduto = produtoRepository.findById(id);
         if (optionalProduto.isEmpty()) {
             throw new ProdutoException(id);
         }
+
         produtoRepository.deleteById(id);
     }
 
@@ -72,7 +71,8 @@ public class ProdutoService {
         if (optionalProduto.isEmpty()) {
             throw new ProdutoException(id);
         }
-        return toDTO(optionalProduto.get());
+
+        return paraDTO(optionalProduto.get());
     }
 
     public ProdutoDTO atualizarProdutoPorId(Long id, ProdutoDTO produtoDTO) {
@@ -87,8 +87,8 @@ public class ProdutoService {
         produto.setModeloProduto(produtoDTO.getModeloProduto());
         produto.setEspecificacaoProduto(produtoDTO.getEspecificacaoProduto());
         produto.setPrecoProduto(produtoDTO.getPrecoProduto());
-
         Produto produtoSalvo = produtoRepository.save(produto);
-        return toDTO(produtoSalvo);
+
+        return paraDTO(produtoSalvo);
     }
 }
