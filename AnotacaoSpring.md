@@ -2,6 +2,17 @@
 
 ---
 
+# Fluxo - UML
+
+#### **Carrinho (1) -------- (N) ItemCarrinho (N) -------- (1) Produto**
+
+     Um Carrinho pode ter vários Itens (1 para muitos).
+
+     Cada ItemCarrinho está ligado a exatamente um Produto (muitos para 1).
+
+![Diagrama UML](UML.png)
+
+
 # Classe Modelo - Produto
 
 ```java
@@ -89,7 +100,7 @@ private String especificacaoProduto;
 
 - Obrigatório e com limite de até 300 caracteres.
 
-### Proço do Produto
+### Preço do Produto
 
 ```java
 @Column(nullable = false)
@@ -492,3 +503,177 @@ public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
 - Exceções como `ProdutoException` → você pode configurar para que retornem **404 Not Found** com uma `@ControllerAdvice`.
 
 - Erros de validação com `@Valid` → retornam **400 Bad Request** automaticamente pelo Spring Boot.
+
+---
+
+# Classe Modelo - Carrinho
+
+```java
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "carrinhos")
+public class Carrinho {
+    
+}
+```
+
+🔹 @Data (do Lombok)
+
+- Gera automaticamente:
+
+- getters e setters
+
+- toString()
+
+- equals() e hashCode()
+
+🔸 Objetivo: evitar código repetitivo e manter a classe limpa.
+
+🔹 @Entity (do JPA)
+
+- Indica que essa classe representa uma entidade do banco de dados.
+
+- Cada instância da classe representa um carrinho no banco.
+
+🔹 @Table(name = "carrinhos")
+
+- Define o nome da tabela no banco como carrinhos.
+
+- Se omitido, o nome padrão seria carrinho.
+
+🔹 @NoArgsConstructor / @AllArgsConstructor
+
+- Construtores padrão (sem e com todos os campos) necessários para instanciar a classe via JPA e para testes.
+
+🔹 @Builder
+
+- Permite criar objetos de forma fluente com o padrão de projeto Builder.
+
+### Chave Primária
+
+```java
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long idCarrinho;
+```
+
+- @Id: Define o campo como chave primária.
+
+- @GeneratedValue(...): O valor é gerado automaticamente pelo banco (auto-incremento).
+
+### Lista de Itens no Carrinho
+
+```java
+@OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+private List<ItemCarrinho> itens = new ArrayList<>();
+```
+
+- Representa a relação 1:N entre Carrinho e ItemCarrinho.
+
+- mappedBy = "carrinho": a associação é controlada pela entidade ItemCarrinho.
+
+- cascade = ALL: se o carrinho for salvo/removido, os itens também serão.
+
+- orphanRemoval = true: se um item for removido da lista, será deletado do banco.
+
+- fetch = LAZY: os itens só são carregados quando acessados (melhora o desempenho).
+
+### Total do Carrinho
+
+```java
+@Column(nullable = false)
+private BigDecimal totalCarrinho = BigDecimal.ZERO;
+```
+
+- Valor total acumulado dos itens do carrinho.
+
+- Tipo BigDecimal para operações precisas com dinheiro.
+
+### Data de Registro
+
+```java
+@CreationTimestamp
+@Column(nullable = false, updatable = false)
+private LocalDateTime dataRegistroCarrinho;
+```
+
+- @CreationTimestamp: preenche automaticamente com a data/hora da criação.
+
+- updatable = false: não permite que a data seja alterada após o registro.
+
+---
+
+# Classe Modelo - ItemCarrinho
+
+```java
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "itens_carrinho")
+public class ItemCarrinho {
+    
+}
+```
+
+🔹 @Data, @Entity, @Table, @NoArgsConstructor, @AllArgsConstructor, @Builder
+
+- Mesma funcionalidade descrita na classe anterior.
+
+### Chave Primária
+
+```java
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long idItemCarrinho;
+```
+
+- Identificador único de cada item. 
+
+### Produto Relacionado
+
+```java
+@ManyToOne
+@JoinColumn(nullable = false)
+private Produto produto;
+```
+
+- Muitos itens podem estar relacionados a um mesmo produto.
+
+- nullable = false: obrigatório definir o produto do item.
+
+### Carrinho ao qual o Item Pertence
+
+```java
+@ManyToOne
+@JoinColumn(nullable = false)
+private Carrinho carrinho;
+```
+
+- Muitos itens pertencem a um único carrinho.
+
+- Define a relação N:1 com Carrinho.
+
+### Quantidade do Produto
+
+```java
+@Column(nullable = false)
+private int quantidade;
+```
+
+- Quantidade do produto incluído no carrinho.
+
+### Preço Total do Item
+
+```java
+@Column(nullable = false)
+private BigDecimal precoTotal;
+```
+
+- Preço total deste item no carrinho (ex: precoProduto * quantidade).
+
+- Usado para somar no totalCarrinho.
