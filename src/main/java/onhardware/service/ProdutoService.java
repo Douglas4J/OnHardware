@@ -17,7 +17,7 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository produtoRepository;
 
-    private Produto paraEntity(ProdutoDTO produtoDTO) {
+    public Produto paraEntity(ProdutoDTO produtoDTO) {
         return Produto.builder()
                // .idProduto(produtoDTO.getIdProduto())
                 .nomeProduto(produtoDTO.getNomeProduto())
@@ -28,7 +28,7 @@ public class ProdutoService {
                 .build();
     }
 
-    private ProdutoDTO paraDTO(Produto produto) {
+    public ProdutoDTO paraDTO(Produto produto) {
         return ProdutoDTO.builder()
                 .idProduto(produto.getIdProduto())
                 .nomeProduto(produto.getNomeProduto())

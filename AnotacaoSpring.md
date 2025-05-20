@@ -589,7 +589,7 @@ private List<ItemCarrinho> itens = new ArrayList<>();
 
 ```java
 @Column(nullable = false)
-private BigDecimal totalCarrinho = BigDecimal.ZERO;
+private BigDecimal totalItensNoCarrinho = BigDecimal.ZERO;
 ```
 
 - Valor total acumulado dos itens do carrinho.
@@ -637,7 +637,7 @@ private LocalDateTime dataRegistroCarrinho;
 
   - itens: a lista de itens do carrinho não pode ser nula.
 
-  - totalCarrinho: o valor total do carrinho deve estar presente.
+  - totalItensNoCarrinho: o valor total do carrinho deve estar presente.
 
 🔹 @Size(min = 1)
 
@@ -653,7 +653,7 @@ private LocalDateTime dataRegistroCarrinho;
 
 - List<ItemCarrinhoDTO> itens: lista de itens que compõem o carrinho.
 
-- BigDecimal totalCarrinho: valor total somado dos produtos no carrinho.
+- BigDecimal totalItensNoCarrinho: valor total somado dos produtos no carrinho.
 
 ---
 
@@ -727,7 +727,7 @@ private BigDecimal precoTotal;
 
 - Preço total deste item no carrinho (ex: precoProduto * quantidade).
 
-- Usado para somar no totalCarrinho.
+- Usado para somar no totalItensNoCarrinho.
 
 ---
 

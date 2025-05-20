@@ -36,7 +36,7 @@ public class Carrinho {
     private List<ItemCarrinho> itens = new ArrayList<>();
 
     @Column(nullable = false)
-    private BigDecimal totalCarrinho = BigDecimal.ZERO;
+    private BigDecimal totalItensNoCarrinho = BigDecimal.ZERO;
 
     @CreationTimestamp
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
