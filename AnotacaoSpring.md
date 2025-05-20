@@ -12,6 +12,10 @@
 
 ![Diagrama UML](UML.png)
 
+    OneToOne:	    Pessoa - Endereço	        / Um para um
+    OneToMany:	    Carrinho - Itens	        / Um para muitos (um lado)
+    ManyToOne:	    Item - Carrinho	        / Muitos para um (outro lado)
+    ManyToMany:	    Aluno - Turma	        / Muitos para muitos, com tabela intermediária
 
 # Classe Modelo - Produto
 
@@ -187,7 +191,7 @@ public class ProdutoService {
 
 - Permite usar o repositório para operações CRUD no banco.
 
-### Conversão entre DTO e Entidade
+### Conversão entre DTO e Entidade do PRODUTO
 
 - A classe ProdutoService utiliza dois métodos auxiliares privados para realizar a conversão entre ProdutoDTO (usado na comunicação com a API) e a entidade Produto (persistida no banco de dados):
 
@@ -606,6 +610,53 @@ private LocalDateTime dataRegistroCarrinho;
 
 ---
 
+# Classe DTO - CarrinhoDTO
+
+### Finalidade
+
+- A classe CarrinhoDTO é utilizada para a transferência de dados relacionados ao carrinho de compras entre a aplicação e os consumidores da API (como controladores REST), separando a entidade Carrinho da camada externa.
+
+- Garante que apenas os dados necessários sejam expostos ou recebidos, com validações aplicadas diretamente nos campos relevantes.
+
+### Anotações
+🔹 @Data (Lombok)
+
+- Gera automaticamente os métodos getters, setters, toString(), equals() e hashCode(), reduzindo o código boilerplate.
+
+🔹 @Builder (Lombok)
+
+- Permite a construção de objetos CarrinhoDTO usando o padrão de projeto Builder, facilitando a criação fluente e segura de instâncias.
+
+### Validações
+
+🔹 @NotNull
+
+- Garante que um campo não seja nulo.
+
+- Aplicado em:
+
+  - itens: a lista de itens do carrinho não pode ser nula.
+
+  - totalCarrinho: o valor total do carrinho deve estar presente.
+
+🔹 @Size(min = 1)
+
+- Aplica-se à lista itens, exigindo que o carrinho contenha pelo menos um item, prevenindo carrinhos vazios.
+
+🔹 @Valid
+
+- Utilizado em List<@Valid ItemCarrinhoDTO> para validar cada item individualmente com base nas regras de validação definidas em ItemCarrinhoDTO.
+
+### Estrutura geral
+
+- Long idCarrinho: identificador único do carrinho.
+
+- List<ItemCarrinhoDTO> itens: lista de itens que compõem o carrinho.
+
+- BigDecimal totalCarrinho: valor total somado dos produtos no carrinho.
+
+---
+
 # Classe Modelo - ItemCarrinho
 
 ```java
@@ -677,3 +728,49 @@ private BigDecimal precoTotal;
 - Preço total deste item no carrinho (ex: precoProduto * quantidade).
 
 - Usado para somar no totalCarrinho.
+
+---
+
+# Classe DTO - ItemCarrinhoDTO
+
+### Finalidade
+
+- A classe ItemCarrinhoDTO representa os dados de um item individual dentro de um carrinho de compras, sendo utilizada na comunicação entre a aplicação e a camada externa (como controladores REST).
+
+- Evita o acoplamento direto com a entidade ItemCarrinho, aplicando validações específicas no nível da API.
+
+### Anotações
+
+🔹 @Data (Lombok)
+
+- Gera automaticamente os métodos getters, setters, toString(), equals() e hashCode(), reduzindo a repetição de código.
+
+🔹 @Builder (Lombok)
+
+- Permite criar objetos da classe usando o padrão Builder, facilitando a construção fluente de instâncias do DTO.
+
+### Validações
+
+🔹 @NotNull
+
+- Garante que um campo não seja nulo.
+
+- Aplicado em:
+
+  - produtoDTO: assegura que o produto esteja presente no item.
+
+  - precoTotal: evita que o valor total do item seja nulo.
+
+🔹 @Min(value = 1)
+
+- Aplicado à propriedade quantidade, garantindo que a quantidade mínima do item seja 1, prevenindo valores zero ou negativos.
+
+### Estrutura geral
+
+- Long idItemCarrinho: identificador único do item no carrinho.
+
+- ProdutoDTO produtoDTO: representa os dados do produto relacionado ao item.
+
+- int quantidade: quantidade do produto no carrinho.
+
+- BigDecimal precoTotal: valor total do item (quantidade × preço unitário).
