@@ -2,6 +2,21 @@
 
 ---
 
+# Fluxo - UML
+
+#### **Carrinho (1) -------- (N) ItemCarrinho (N) -------- (1) Produto**
+
+     Um Carrinho pode ter vários Itens (1 para muitos).
+
+     Cada ItemCarrinho está ligado a exatamente um Produto (muitos para 1).
+
+![Diagrama UML](UML.png)
+
+    OneToOne:	    Pessoa - Endereço	        / Um para um
+    OneToMany:	    Carrinho - Itens	        / Um para muitos (um lado)
+    ManyToOne:	    Item - Carrinho	        / Muitos para um (outro lado)
+    ManyToMany:	    Aluno - Turma	        / Muitos para muitos, com tabela intermediária
+
 # Classe Modelo - Produto
 
 ```java
@@ -89,7 +104,7 @@ private String especificacaoProduto;
 
 - Obrigatório e com limite de até 300 caracteres.
 
-### Proço do Produto
+### Preço do Produto
 
 ```java
 @Column(nullable = false)
@@ -176,7 +191,7 @@ public class ProdutoService {
 
 - Permite usar o repositório para operações CRUD no banco.
 
-### Conversão entre DTO e Entidade
+### Conversão entre DTO e Entidade do PRODUTO
 
 - A classe ProdutoService utiliza dois métodos auxiliares privados para realizar a conversão entre ProdutoDTO (usado na comunicação com a API) e a entidade Produto (persistida no banco de dados):
 
@@ -492,3 +507,270 @@ public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
 - Exceções como `ProdutoException` → você pode configurar para que retornem **404 Not Found** com uma `@ControllerAdvice`.
 
 - Erros de validação com `@Valid` → retornam **400 Bad Request** automaticamente pelo Spring Boot.
+
+---
+
+# Classe Modelo - Carrinho
+
+```java
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "carrinhos")
+public class Carrinho {
+    
+}
+```
+
+🔹 @Data (do Lombok)
+
+- Gera automaticamente:
+
+- getters e setters
+
+- toString()
+
+- equals() e hashCode()
+
+🔸 Objetivo: evitar código repetitivo e manter a classe limpa.
+
+🔹 @Entity (do JPA)
+
+- Indica que essa classe representa uma entidade do banco de dados.
+
+- Cada instância da classe representa um carrinho no banco.
+
+🔹 @Table(name = "carrinhos")
+
+- Define o nome da tabela no banco como carrinhos.
+
+- Se omitido, o nome padrão seria carrinho.
+
+🔹 @NoArgsConstructor / @AllArgsConstructor
+
+- Construtores padrão (sem e com todos os campos) necessários para instanciar a classe via JPA e para testes.
+
+🔹 @Builder
+
+- Permite criar objetos de forma fluente com o padrão de projeto Builder.
+
+### Chave Primária
+
+```java
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long idCarrinho;
+```
+
+- @Id: Define o campo como chave primária.
+
+- @GeneratedValue(...): O valor é gerado automaticamente pelo banco (auto-incremento).
+
+### Lista de Itens no Carrinho
+
+```java
+@OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+private List<ItemCarrinho> itens = new ArrayList<>();
+```
+
+- Representa a relação 1:N entre Carrinho e ItemCarrinho.
+
+- mappedBy = "carrinho": a associação é controlada pela entidade ItemCarrinho.
+
+- cascade = ALL: se o carrinho for salvo/removido, os itens também serão.
+
+- orphanRemoval = true: se um item for removido da lista, será deletado do banco.
+
+- fetch = LAZY: os itens só são carregados quando acessados (melhora o desempenho).
+
+### Total do Carrinho
+
+```java
+@Column(nullable = false)
+private BigDecimal totalItensNoCarrinho = BigDecimal.ZERO;
+```
+
+- Valor total acumulado dos itens do carrinho.
+
+- Tipo BigDecimal para operações precisas com dinheiro.
+
+### Data de Registro
+
+```java
+@CreationTimestamp
+@Column(nullable = false, updatable = false)
+private LocalDateTime dataRegistroCarrinho;
+```
+
+- @CreationTimestamp: preenche automaticamente com a data/hora da criação.
+
+- updatable = false: não permite que a data seja alterada após o registro.
+
+---
+
+# Classe DTO - CarrinhoDTO
+
+### Finalidade
+
+- A classe CarrinhoDTO é utilizada para a transferência de dados relacionados ao carrinho de compras entre a aplicação e os consumidores da API (como controladores REST), separando a entidade Carrinho da camada externa.
+
+- Garante que apenas os dados necessários sejam expostos ou recebidos, com validações aplicadas diretamente nos campos relevantes.
+
+### Anotações
+🔹 @Data (Lombok)
+
+- Gera automaticamente os métodos getters, setters, toString(), equals() e hashCode(), reduzindo o código boilerplate.
+
+🔹 @Builder (Lombok)
+
+- Permite a construção de objetos CarrinhoDTO usando o padrão de projeto Builder, facilitando a criação fluente e segura de instâncias.
+
+### Validações
+
+🔹 @NotNull
+
+- Garante que um campo não seja nulo.
+
+- Aplicado em:
+
+  - itens: a lista de itens do carrinho não pode ser nula.
+
+  - totalItensNoCarrinho: o valor total do carrinho deve estar presente.
+
+🔹 @Size(min = 1)
+
+- Aplica-se à lista itens, exigindo que o carrinho contenha pelo menos um item, prevenindo carrinhos vazios.
+
+🔹 @Valid
+
+- Utilizado em List<@Valid ItemCarrinhoDTO> para validar cada item individualmente com base nas regras de validação definidas em ItemCarrinhoDTO.
+
+### Estrutura geral
+
+- Long idCarrinho: identificador único do carrinho.
+
+- List<ItemCarrinhoDTO> itens: lista de itens que compõem o carrinho.
+
+- BigDecimal totalItensNoCarrinho: valor total somado dos produtos no carrinho.
+
+---
+
+# Classe Modelo - ItemCarrinho
+
+```java
+@Data
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Table(name = "itens_carrinho")
+public class ItemCarrinho {
+    
+}
+```
+
+🔹 @Data, @Entity, @Table, @NoArgsConstructor, @AllArgsConstructor, @Builder
+
+- Mesma funcionalidade descrita na classe anterior.
+
+### Chave Primária
+
+```java
+@Id
+@GeneratedValue(strategy = GenerationType.IDENTITY)
+private Long idItemCarrinho;
+```
+
+- Identificador único de cada item. 
+
+### Produto Relacionado
+
+```java
+@ManyToOne
+@JoinColumn(nullable = false)
+private Produto produto;
+```
+
+- Muitos itens podem estar relacionados a um mesmo produto.
+
+- nullable = false: obrigatório definir o produto do item.
+
+### Carrinho ao qual o Item Pertence
+
+```java
+@ManyToOne
+@JoinColumn(nullable = false)
+private Carrinho carrinho;
+```
+
+- Muitos itens pertencem a um único carrinho.
+
+- Define a relação N:1 com Carrinho.
+
+### Quantidade do Produto
+
+```java
+@Column(nullable = false)
+private int quantidade;
+```
+
+- Quantidade do produto incluído no carrinho.
+
+### Preço Total do Item
+
+```java
+@Column(nullable = false)
+private BigDecimal precoTotal;
+```
+
+- Preço total deste item no carrinho (ex: precoProduto * quantidade).
+
+- Usado para somar no totalItensNoCarrinho.
+
+---
+
+# Classe DTO - ItemCarrinhoDTO
+
+### Finalidade
+
+- A classe ItemCarrinhoDTO representa os dados de um item individual dentro de um carrinho de compras, sendo utilizada na comunicação entre a aplicação e a camada externa (como controladores REST).
+
+- Evita o acoplamento direto com a entidade ItemCarrinho, aplicando validações específicas no nível da API.
+
+### Anotações
+
+🔹 @Data (Lombok)
+
+- Gera automaticamente os métodos getters, setters, toString(), equals() e hashCode(), reduzindo a repetição de código.
+
+🔹 @Builder (Lombok)
+
+- Permite criar objetos da classe usando o padrão Builder, facilitando a construção fluente de instâncias do DTO.
+
+### Validações
+
+🔹 @NotNull
+
+- Garante que um campo não seja nulo.
+
+- Aplicado em:
+
+  - produtoDTO: assegura que o produto esteja presente no item.
+
+  - precoTotal: evita que o valor total do item seja nulo.
+
+🔹 @Min(value = 1)
+
+- Aplicado à propriedade quantidade, garantindo que a quantidade mínima do item seja 1, prevenindo valores zero ou negativos.
+
+### Estrutura geral
+
+- Long idItemCarrinho: identificador único do item no carrinho.
+
+- ProdutoDTO produtoDTO: representa os dados do produto relacionado ao item.
+
+- int quantidade: quantidade do produto no carrinho.
+
+- BigDecimal precoTotal: valor total do item (quantidade × preço unitário).
