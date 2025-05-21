@@ -1,12 +1,12 @@
 package onhardware.service;
 
 import onhardware.DTO.CarrinhoDTO;
-import onhardware.DTO.ItemCarrinhoDTO;
+import onhardware.DTO.ProdutoCarrinhoDTO;
 import onhardware.exception.CarrinhoException;
-import onhardware.exception.ItemCarrinhoException;
+import onhardware.exception.ProdutoCarrinhoException;
 import onhardware.exception.ProdutoException;
 import onhardware.model.Carrinho;
-import onhardware.model.ItemCarrinho;
+import onhardware.model.ProdutoCarrinho;
 import onhardware.model.Produto;
 import onhardware.repository.CarrinhoRepository;
 import onhardware.repository.ProdutoRepository;
@@ -28,7 +28,7 @@ public class CarrinhoService {
     private ProdutoRepository produtoRepository;
 
     @Autowired
-    private ItemCarrinhoService itemCarrinhoService;
+    private ProdutoCarrinhoService produtoCarrinhoService;
 
     @Autowired
     private ProdutoService produtoService;
@@ -36,30 +36,30 @@ public class CarrinhoService {
     public Carrinho paraEntity(CarrinhoDTO carrinhoDTO) {
         Carrinho carrinho = Carrinho.builder()
                 .idCarrinho(carrinhoDTO.getIdCarrinho())
-                .totalItensNoCarrinho(carrinhoDTO.getTotalItensNoCarrinho())
+                .totalProdutosNoCarrinho(carrinhoDTO.getTotalProdutosNoCarrinho())
                 .build();
 
-        List<ItemCarrinho> itens = new ArrayList<>();
-        for (ItemCarrinhoDTO dto : carrinhoDTO.getItens()) {
-            ItemCarrinho item = itemCarrinhoService.paraEntity(dto,carrinho);
-            itens.add(item);
+        List<ProdutoCarrinho> produtos = new ArrayList<>();
+        for (ProdutoCarrinhoDTO dto : carrinhoDTO.getProdutos()) {
+            ProdutoCarrinho produto = produtoCarrinhoService.paraEntity(dto,carrinho);
+            produtos.add(produto);
         }
-        carrinho.setItens(itens);
+        carrinho.setProdutos(produtos);
 
         return carrinho;
     }
 
     public CarrinhoDTO paraDTO(Carrinho carrinho) {
-        List<ItemCarrinhoDTO> itensDTO = new ArrayList<>();
-        for (ItemCarrinho item : carrinho.getItens()) {
-            ItemCarrinhoDTO itemDTO =itemCarrinhoService.paraDTO(item);
-            itensDTO.add(itemDTO);
+        List<ProdutoCarrinhoDTO> produtosDTO = new ArrayList<>();
+        for (ProdutoCarrinho produto : carrinho.getProdutos()) {
+            ProdutoCarrinhoDTO produtoDTO = produtoCarrinhoService.paraDTO(produto);
+            produtosDTO.add(produtoDTO);
         }
 
         return CarrinhoDTO.builder()
                 .idCarrinho(carrinho.getIdCarrinho())
-                .totalItensNoCarrinho(carrinho.getTotalItensNoCarrinho())
-                .itens(itensDTO)
+                .totalProdutosNoCarrinho(carrinho.getTotalProdutosNoCarrinho())
+                .produtos(produtosDTO)
                 .build();
     }
 
@@ -100,17 +100,17 @@ public class CarrinhoService {
     }
 
     /*
-    METOTODO - > adicionarItem()
+    METOTODO - > adicionarProduto()
 
     - Acha o carrinho e o produto
     - Vê se o produto já está no carrinho
     - Se sim: soma a quantidade
-    - Se não: cria um novo item e coloca no carrinho
+    - Se não: cria um novo produto e coloca no carrinho
     - Salva tudo
     - Converte e devolve o carrinho atualizado
      */
 
-    public CarrinhoDTO adicionarItem(Long idCarrinho, Long idProduto, int quantidade) {
+    public CarrinhoDTO adicionarProduto(Long idCarrinho, Long idProduto, int quantidade) {
         if (quantidade <= 0) {
             throw new IllegalArgumentException("A quantidade deve ser maior que zero.");
         }
@@ -129,95 +129,92 @@ public class CarrinhoService {
         }
         Produto produto = optionalProduto.get();
 
-        // Verifica se o item já existe no carrinho
-        ItemCarrinho itemExistente = buscarItemCarrinho(carrinho.getItens(), idProduto);
+        // Verifica se o produto já existe no carrinho
+        ProdutoCarrinho produtoExistente = buscarProdutoCarrinho(carrinho.getProdutos(), idProduto);
 
-        if (itemExistente != null) {
-            int novaQuantidade = itemExistente.getQuantidade() + quantidade;
-            itemExistente.setQuantidade(novaQuantidade);
-            itemExistente.setPrecoTotal(produto.getPrecoProduto().multiply(new BigDecimal(novaQuantidade)));
+        if (produtoExistente != null) {
+            int novaQuantidade = produtoExistente.getQuantidade() + quantidade;
+            produtoExistente.setQuantidade(novaQuantidade);
+            produtoExistente.setPrecoTotal(produto.getPrecoProduto().multiply(new BigDecimal(novaQuantidade)));
 
         } else {
-            ItemCarrinho novoItem = ItemCarrinho.builder()
+            ProdutoCarrinho novoProduto = ProdutoCarrinho.builder()
                     .produto(produto)
                     .quantidade(quantidade)
                     .precoTotal(produto.getPrecoProduto().multiply(new BigDecimal(quantidade)))
                     .carrinho(carrinho)
                     .build();
 
-            carrinho.getItens().add(novoItem);
+            carrinho.getProdutos().add(novoProduto);
         }
 
 
-        carrinho.setTotalItensNoCarrinho(calcularTotalItensNoCarrinho(carrinho.getItens()));
+        carrinho.setTotalProdutosNoCarrinho(calcularTotalProdutosNoCarrinho(carrinho.getProdutos()));
 
         Carrinho carrinhoAtualizado = carrinhoRepository.save(carrinho);
 
-        // Retorna o DTO atualizado
         return paraDTO(carrinhoAtualizado);
     }
 
     /*
-    METODO -> removerItem()
+    METODO -> removerProduto()
 
     - Busca o carrinho pelo ID
-    - Busca o item do carrinho pelo ID do item
-    - Se não encontrar o carrinho ou o item, lança exceção
-    - Remove o item da lista de itens do carrinho
-    - Deleta o item do banco de dados
-    - Atualiza o total do carrinho somando os preços dos itens restantes
+    - Busca o produto do carrinho pelo ID do produto
+    - Se não encontrar o carrinho ou o produto, lança exceção
+    - Remove o produto da lista de produtos do carrinho
+    - Deleta o produto do banco de dados
+    - Atualiza o total do carrinho somando os preços dos produtos restantes
     - Salva o carrinho atualizado
     - Converte e retorna o DTO do carrinho atualizado
     */
 
-    public CarrinhoDTO removerItem(Long idCarrinho, Long idItemCarrinho) {
+    public CarrinhoDTO removerProduto(Long idCarrinho, Long idProdutoCarrinho) {
         Optional<Carrinho> optionalCarrinho = carrinhoRepository.findById(idCarrinho);
         if (optionalCarrinho.isEmpty()) {
             throw new CarrinhoException(idCarrinho);
         }
         Carrinho carrinho = optionalCarrinho.get();
 
-        ItemCarrinho itemParaRemover = buscarItemCarrinhoPorId(carrinho.getItens(), idItemCarrinho);
-        if (itemParaRemover == null) {
-            throw new ItemCarrinhoException(idItemCarrinho);
+        ProdutoCarrinho produtoParaRemover = buscarProdutoCarrinhoPorId(carrinho.getProdutos(), idProdutoCarrinho);
+        if (produtoParaRemover == null) {
+            throw new ProdutoCarrinhoException(idProdutoCarrinho);
         }
 
-        carrinho.getItens().remove(itemParaRemover);
+        carrinho.getProdutos().remove(produtoParaRemover);
 
-        itemCarrinhoService.deletarPorId(idItemCarrinho);
+        produtoCarrinhoService.deletarPorId(idProdutoCarrinho);
 
-        carrinho.setTotalItensNoCarrinho(calcularTotalItensNoCarrinho(carrinho.getItens()));
+        carrinho.setTotalProdutosNoCarrinho(calcularTotalProdutosNoCarrinho(carrinho.getProdutos()));
 
         Carrinho carrinhoAtualizado = carrinhoRepository.save(carrinho);
         return paraDTO(carrinhoAtualizado);
     }
 
-    public ItemCarrinho buscarItemCarrinho(List<ItemCarrinho> itens, Long idProduto) {
-        for (ItemCarrinho item : itens) {
-            if (item.getProduto().getIdProduto().equals(idProduto)) {
-                return item;
+    public ProdutoCarrinho buscarProdutoCarrinho(List<ProdutoCarrinho> produtos, Long idProduto) {
+        for (ProdutoCarrinho produto : produtos) {
+            if (produto.getProduto().getIdProduto().equals(idProduto)) {
+                return produto;
             }
         }
         return null;
     }
 
-    public ItemCarrinho buscarItemCarrinhoPorId(List<ItemCarrinho> itens, Long idItemCarrinho) {
-        for (ItemCarrinho item : itens) {
-            if (item.getIdItemCarrinho().equals(idItemCarrinho)) {
-                return item;
+    public ProdutoCarrinho buscarProdutoCarrinhoPorId(List<ProdutoCarrinho> produtos, Long idProdutoCarrinho) {
+        for (ProdutoCarrinho produto : produtos) {
+            if (produto.getIdProdutoCarrinho().equals(idProdutoCarrinho)) {
+                return produto;
             }
         }
         return null;
     }
 
     // USAR AO ATUALIZAR O CARRINHO
-    private BigDecimal calcularTotalItensNoCarrinho(List<ItemCarrinho> itens) {
+    private BigDecimal calcularTotalProdutosNoCarrinho(List<ProdutoCarrinho> produtos) {
         BigDecimal total = BigDecimal.ZERO;
-        for (ItemCarrinho item : itens) {
-            total = total.add(item.getPrecoTotal());
+        for (ProdutoCarrinho produto : produtos) {
+            total = total.add(produto.getPrecoTotal());
         }
         return total;
     }
-
-
 }

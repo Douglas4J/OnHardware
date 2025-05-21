@@ -4,18 +4,13 @@
 
 # Fluxo - UML
 
-#### **Carrinho (1) -------- (N) ItemCarrinho (N) -------- (1) Produto**
+#### **Carrinho (1) -------- (N) ProdutoCarrinho (N) -------- (1) Produto**
 
-     Um Carrinho pode ter vários Itens (1 para muitos).
+     Um Carrinho pode ter vários Produtos (1 para muitos).
 
-     Cada ItemCarrinho está ligado a exatamente um Produto (muitos para 1).
+     Cada ProdutoCarrinho está ligado a exatamente um Produto (muitos para 1).
 
 ![Diagrama UML](UML.png)
-
-    OneToOne:	    Pessoa - Endereço	        / Um para um
-    OneToMany:	    Carrinho - Itens	        / Um para muitos (um lado)
-    ManyToOne:	    Item - Carrinho	        / Muitos para um (outro lado)
-    ManyToMany:	    Aluno - Turma	        / Muitos para muitos, com tabela intermediária
 
 # Classe Modelo - Produto
 
@@ -568,31 +563,31 @@ private Long idCarrinho;
 
 - @GeneratedValue(...): O valor é gerado automaticamente pelo banco (auto-incremento).
 
-### Lista de Itens no Carrinho
+### Lista de Produtos no Carrinho
 
 ```java
 @OneToMany(mappedBy = "carrinho", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-private List<ItemCarrinho> itens = new ArrayList<>();
+private List<ProdutoCarrinho> Produtos = new ArrayList<>();
 ```
 
-- Representa a relação 1:N entre Carrinho e ItemCarrinho.
+- Representa a relação 1:N entre Carrinho e ProdutoCarrinho.
 
-- mappedBy = "carrinho": a associação é controlada pela entidade ItemCarrinho.
+- mappedBy = "carrinho": a associação é controlada pela entidade ProdutoCarrinho.
 
-- cascade = ALL: se o carrinho for salvo/removido, os itens também serão.
+- cascade = ALL: se o carrinho for salvo/removido, os produtos também serão.
 
-- orphanRemoval = true: se um item for removido da lista, será deletado do banco.
+- orphanRemoval = true: se um produto for removido da lista, será deletado do banco.
 
-- fetch = LAZY: os itens só são carregados quando acessados (melhora o desempenho).
+- fetch = LAZY: os produtos só são carregados quando acessados (melhora o desempenho).
 
 ### Total do Carrinho
 
 ```java
 @Column(nullable = false)
-private BigDecimal totalItensNoCarrinho = BigDecimal.ZERO;
+private BigDecimal totalProdutosNoCarrinho = BigDecimal.ZERO;
 ```
 
-- Valor total acumulado dos itens do carrinho.
+- Valor total acumulado dos produtos do carrinho.
 
 - Tipo BigDecimal para operações precisas com dinheiro.
 
@@ -635,29 +630,29 @@ private LocalDateTime dataRegistroCarrinho;
 
 - Aplicado em:
 
-  - itens: a lista de itens do carrinho não pode ser nula.
+  - produtos: a lista de produtos do carrinho não pode ser nula.
 
-  - totalItensNoCarrinho: o valor total do carrinho deve estar presente.
+  - totalProdutosNoCarrinho: o valor total do carrinho deve estar presente.
 
 🔹 @Size(min = 1)
 
-- Aplica-se à lista itens, exigindo que o carrinho contenha pelo menos um item, prevenindo carrinhos vazios.
+- Aplica-se à lista produtos, exigindo que o carrinho contenha pelo menos um produto, prevenindo carrinhos vazios.
 
 🔹 @Valid
 
-- Utilizado em List<@Valid ItemCarrinhoDTO> para validar cada item individualmente com base nas regras de validação definidas em ItemCarrinhoDTO.
+- Utilizado em List<@Valid ProdutoCarrinhoDTO> para validar cada produto individualmente com base nas regras de validação definidas em ProdutoCarrinhoDTO.
 
 ### Estrutura geral
 
 - Long idCarrinho: identificador único do carrinho.
 
-- List<ItemCarrinhoDTO> itens: lista de itens que compõem o carrinho.
+- List<ProdutoCarrinhoDTO> produtos: lista de produtos que compõem o carrinho.
 
-- BigDecimal totalItensNoCarrinho: valor total somado dos produtos no carrinho.
+- BigDecimal totalProdutosNoCarrinho: valor total somado dos produtos no carrinho.
 
 ---
 
-# Classe Modelo - ItemCarrinho
+# Classe Modelo - ProdutoCarrinho
 
 ```java
 @Data
@@ -665,8 +660,8 @@ private LocalDateTime dataRegistroCarrinho;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "itens_carrinho")
-public class ItemCarrinho {
+@Table(name = "produtos_carrinho")
+public class ProdutoCarrinho {
     
 }
 ```
@@ -680,10 +675,10 @@ public class ItemCarrinho {
 ```java
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
-private Long idItemCarrinho;
+private Long idProdutoCarrinho;
 ```
 
-- Identificador único de cada item. 
+- Identificador único de cada produto. 
 
 ### Produto Relacionado
 
@@ -693,11 +688,11 @@ private Long idItemCarrinho;
 private Produto produto;
 ```
 
-- Muitos itens podem estar relacionados a um mesmo produto.
+- Muitos produtos podem estar relacionados a um mesmo produto.
 
-- nullable = false: obrigatório definir o produto do item.
+- nullable = false: obrigatório definir o produto do produto.
 
-### Carrinho ao qual o Item Pertence
+### Carrinho ao qual o Produto Pertence
 
 ```java
 @ManyToOne
@@ -705,7 +700,7 @@ private Produto produto;
 private Carrinho carrinho;
 ```
 
-- Muitos itens pertencem a um único carrinho.
+- Muitos produtos pertencem a um único carrinho.
 
 - Define a relação N:1 com Carrinho.
 
@@ -718,26 +713,26 @@ private int quantidade;
 
 - Quantidade do produto incluído no carrinho.
 
-### Preço Total do Item
+### Preço Total do Produto
 
 ```java
 @Column(nullable = false)
 private BigDecimal precoTotal;
 ```
 
-- Preço total deste item no carrinho (ex: precoProduto * quantidade).
+- Preço total deste produto no carrinho (ex: precoProduto * quantidade).
 
-- Usado para somar no totalItensNoCarrinho.
+- Usado para somar no totalProdutosNoCarrinho.
 
 ---
 
-# Classe DTO - ItemCarrinhoDTO
+# Classe DTO - ProdutoCarrinhoDTO
 
 ### Finalidade
 
-- A classe ItemCarrinhoDTO representa os dados de um item individual dentro de um carrinho de compras, sendo utilizada na comunicação entre a aplicação e a camada externa (como controladores REST).
+- A classe ProdutoCarrinhoDTO representa os dados de um produto individual dentro de um carrinho de compras, sendo utilizada na comunicação entre a aplicação e a camada externa (como controladores REST).
 
-- Evita o acoplamento direto com a entidade ItemCarrinho, aplicando validações específicas no nível da API.
+- Evita o acoplamento direto com a entidade ProdutoCarrinho, aplicando validações específicas no nível da API.
 
 ### Anotações
 
@@ -757,20 +752,20 @@ private BigDecimal precoTotal;
 
 - Aplicado em:
 
-  - produtoDTO: assegura que o produto esteja presente no item.
+  - produtoDTO: assegura que o produto esteja presente no produto.
 
-  - precoTotal: evita que o valor total do item seja nulo.
+  - precoTotal: evita que o valor total do produto seja nulo.
 
 🔹 @Min(value = 1)
 
-- Aplicado à propriedade quantidade, garantindo que a quantidade mínima do item seja 1, prevenindo valores zero ou negativos.
+- Aplicado à propriedade quantidade, garantindo que a quantidade mínima do produto seja 1, prevenindo valores zero ou negativos.
 
 ### Estrutura geral
 
-- Long idItemCarrinho: identificador único do item no carrinho.
+- Long idProdutoCarrinho: identificador único do produto no carrinho.
 
-- ProdutoDTO produtoDTO: representa os dados do produto relacionado ao item.
+- ProdutoDTO produtoDTO: representa os dados do produto relacionado ao produto.
 
 - int quantidade: quantidade do produto no carrinho.
 
-- BigDecimal precoTotal: valor total do item (quantidade × preço unitário).
+- BigDecimal precoTotal: valor total do produto (quantidade × preço unitário).

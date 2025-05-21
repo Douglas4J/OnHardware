@@ -13,8 +13,8 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ItemCarrinhoDTO {
-    private Long idItemCarrinho;
+public class ProdutoCarrinhoDTO {
+    private Long idProdutoCarrinho;
 
     @NotNull(message = "O produto é obrigatório.")
     private ProdutoDTO produtoDTO;
@@ -22,6 +22,6 @@ public class ItemCarrinhoDTO {
     @Min(value = 1, message = "A quantidade deve ser no mínimo 1.")
     private int quantidade;
 
-    @NotNull(message = "O preço total do item é obrigatório.")
+    @NotNull(message = "O preço total do produto é obrigatório.")
     private BigDecimal precoTotal;
 }

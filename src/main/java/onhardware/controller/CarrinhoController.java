@@ -39,20 +39,19 @@ public class CarrinhoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{idCarrinho}/itens/{idProduto}")
-    public ResponseEntity<CarrinhoDTO> adicionarItemAoCarrinho(@PathVariable Long idCarrinho,
+    @PostMapping("/{idCarrinho}/produtos/{idProduto}")
+    public ResponseEntity<CarrinhoDTO> adicionarProdutoAoCarrinho(@PathVariable Long idCarrinho,
                                                                @PathVariable Long idProduto,
                                                                @RequestParam int quantidade) {
 
-        CarrinhoDTO carrinhoAtualizado = carrinhoService.adicionarItem(idCarrinho, idProduto, quantidade);
+        CarrinhoDTO carrinhoAtualizado = carrinhoService.adicionarProduto(idCarrinho, idProduto, quantidade);
         return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoAtualizado);
     }
 
-    @DeleteMapping("/{idCarrinho}/itens/{idItemCarrinho}")
-    public ResponseEntity<CarrinhoDTO> removerItemDoCarrinho(@PathVariable Long idCarrinho,
-                                                             @PathVariable Long idItemCarrinho) {
-        CarrinhoDTO carrinhoAtualizado = carrinhoService.removerItem(idCarrinho, idItemCarrinho);
+    @DeleteMapping("/{idCarrinho}/produtos/{idProdutoCarrinho}")
+    public ResponseEntity<CarrinhoDTO> removerProdutoDoCarrinho(@PathVariable Long idCarrinho,
+                                                             @PathVariable Long idProdutoCarrinho) {
+        CarrinhoDTO carrinhoAtualizado = carrinhoService.removerProduto(idCarrinho, idProdutoCarrinho);
         return ResponseEntity.ok(carrinhoAtualizado);
     }
-
 }
