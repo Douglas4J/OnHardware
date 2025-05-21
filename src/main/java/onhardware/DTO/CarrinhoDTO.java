@@ -22,5 +22,5 @@ public class CarrinhoDTO {
     private List<@Valid ProdutoCarrinhoDTO> produtos;
 
     @NotNull(message = "O total do carrinho é obrigatório.")
-    private BigDecimal totalProdutosNoCarrinho;
+    private BigDecimal valorTotalCarrinho;
 }

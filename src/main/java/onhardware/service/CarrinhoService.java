@@ -36,7 +36,7 @@ public class CarrinhoService {
     public Carrinho paraEntity(CarrinhoDTO carrinhoDTO) {
         Carrinho carrinho = Carrinho.builder()
                 .idCarrinho(carrinhoDTO.getIdCarrinho())
-                .totalProdutosNoCarrinho(carrinhoDTO.getTotalProdutosNoCarrinho())
+                .valorTotalCarrinho(carrinhoDTO.getValorTotalCarrinho())
                 .build();
 
         List<ProdutoCarrinho> produtos = new ArrayList<>();
@@ -58,7 +58,7 @@ public class CarrinhoService {
 
         return CarrinhoDTO.builder()
                 .idCarrinho(carrinho.getIdCarrinho())
-                .totalProdutosNoCarrinho(carrinho.getTotalProdutosNoCarrinho())
+                .valorTotalCarrinho(carrinho.getValorTotalCarrinho())
                 .produtos(produtosDTO)
                 .build();
     }
@@ -149,7 +149,7 @@ public class CarrinhoService {
         }
 
 
-        carrinho.setTotalProdutosNoCarrinho(calcularTotalProdutosNoCarrinho(carrinho.getProdutos()));
+        carrinho.setValorTotalCarrinho(calcularValorTotalCarrinho(carrinho.getProdutos()));
 
         Carrinho carrinhoAtualizado = carrinhoRepository.save(carrinho);
 
@@ -185,7 +185,7 @@ public class CarrinhoService {
 
         produtoCarrinhoService.deletarPorId(idProdutoCarrinho);
 
-        carrinho.setTotalProdutosNoCarrinho(calcularTotalProdutosNoCarrinho(carrinho.getProdutos()));
+        carrinho.setValorTotalCarrinho(calcularValorTotalCarrinho(carrinho.getProdutos()));
 
         Carrinho carrinhoAtualizado = carrinhoRepository.save(carrinho);
         return paraDTO(carrinhoAtualizado);
@@ -210,11 +210,30 @@ public class CarrinhoService {
     }
 
     // USAR AO ATUALIZAR O CARRINHO
-    private BigDecimal calcularTotalProdutosNoCarrinho(List<ProdutoCarrinho> produtos) {
+    public BigDecimal calcularValorTotalCarrinho(List<ProdutoCarrinho> produtos) {
         BigDecimal total = BigDecimal.ZERO;
         for (ProdutoCarrinho produto : produtos) {
             total = total.add(produto.getPrecoTotal());
         }
         return total;
     }
+
+    public CarrinhoDTO finalizarCompra(Long id) {
+        Optional<Carrinho> optionalCarrinho = carrinhoRepository.findById(id);
+        if (optionalCarrinho.isEmpty()) {
+            throw new CarrinhoException(id);
+        }
+        Carrinho carrinho = optionalCarrinho.get();
+
+        carrinho.getProdutos().clear();
+
+        carrinho.setValorTotalCarrinho(BigDecimal.ZERO);
+
+        Carrinho carrinhoFinalizado = carrinhoRepository.save(carrinho);
+
+        return paraDTO(carrinhoFinalizado);
+
+    }
+
+
 }

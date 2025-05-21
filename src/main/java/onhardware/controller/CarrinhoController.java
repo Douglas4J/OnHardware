@@ -1,7 +1,9 @@
 package onhardware.controller;
 
 import jakarta.validation.Valid;
+import onhardware.DTO.AdicionarProdutoDTO;
 import onhardware.DTO.CarrinhoDTO;
+import onhardware.DTO.FinalizarCompraDTO;
 import onhardware.service.CarrinhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,12 +41,11 @@ public class CarrinhoController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{idCarrinho}/produtos/{idProduto}")
+    @PostMapping("/{idCarrinho}/produtos")
     public ResponseEntity<CarrinhoDTO> adicionarProdutoAoCarrinho(@PathVariable Long idCarrinho,
-                                                               @PathVariable Long idProduto,
-                                                               @RequestParam int quantidade) {
+                                                                  @Valid @RequestBody AdicionarProdutoDTO dto) {
 
-        CarrinhoDTO carrinhoAtualizado = carrinhoService.adicionarProduto(idCarrinho, idProduto, quantidade);
+        CarrinhoDTO carrinhoAtualizado = carrinhoService.adicionarProduto(idCarrinho, dto.getIdProduto(), dto.getQuantidade());
         return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoAtualizado);
     }
 
@@ -54,4 +55,17 @@ public class CarrinhoController {
         CarrinhoDTO carrinhoAtualizado = carrinhoService.removerProduto(idCarrinho, idProdutoCarrinho);
         return ResponseEntity.ok(carrinhoAtualizado);
     }
+
+    @PostMapping("/{idCarrinho}/finalizar-compra")
+    public ResponseEntity<CarrinhoDTO> finalizarCompra(@PathVariable("idCarrinho") Long idCarrinho,
+                                                       @RequestBody @Valid FinalizarCompraDTO finalizarCompraDTO) {
+
+        if (!finalizarCompraDTO.isConfirmacao()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        CarrinhoDTO carrinhoFinalizado = carrinhoService.finalizarCompra(idCarrinho);
+        return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoFinalizado);
+    }
+
 }
