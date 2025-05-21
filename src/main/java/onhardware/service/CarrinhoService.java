@@ -2,7 +2,6 @@ package onhardware.service;
 
 import onhardware.DTO.CarrinhoDTO;
 import onhardware.DTO.ItemCarrinhoDTO;
-import onhardware.DTO.ProdutoDTO;
 import onhardware.exception.CarrinhoException;
 import onhardware.exception.ItemCarrinhoException;
 import onhardware.exception.ProdutoException;
@@ -69,6 +68,35 @@ public class CarrinhoService {
         Carrinho carrinhoSalvo = carrinhoRepository.save(carrinho);
 
         return paraDTO(carrinhoSalvo);
+    }
+
+    public List<CarrinhoDTO> listarTodosCarrinhos() {
+        List<Carrinho> carrinhos = carrinhoRepository.findAll();
+        List<CarrinhoDTO> carrinhoDTOs = new ArrayList<>();
+
+        for (Carrinho carrinho : carrinhos) {
+            carrinhoDTOs.add(paraDTO(carrinho));
+        }
+
+        return carrinhoDTOs;
+    }
+
+    public CarrinhoDTO buscarCarrinhoPorId(Long id) {
+        Optional<Carrinho> optionalCarrinho = carrinhoRepository.findById(id);
+        if (optionalCarrinho.isEmpty()) {
+            throw new CarrinhoException(id);
+        }
+
+        return paraDTO(optionalCarrinho.get());
+    }
+
+    public void deletarCarrinhoPorId(Long id) {
+        Optional<Carrinho> optionalCarrinho = carrinhoRepository.findById(id);
+        if (optionalCarrinho.isEmpty()) {
+            throw new CarrinhoException(id);
+        }
+
+        carrinhoRepository.deleteById(id);
     }
 
     /*
