@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/carrinhos")
 public class CarrinhoController {
@@ -19,6 +21,22 @@ public class CarrinhoController {
     public ResponseEntity<CarrinhoDTO> criarCarrinho(@Valid @RequestBody CarrinhoDTO carrinhoDTO) {
         CarrinhoDTO carrinhoCadastrado = carrinhoService.cadastrarCarrinho(carrinhoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoCadastrado);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CarrinhoDTO>> listarCarrinhos() {
+        return ResponseEntity.ok(carrinhoService.listarTodosCarrinhos());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CarrinhoDTO> buscarCarrinho(@PathVariable Long id) {
+        return ResponseEntity.ok(carrinhoService.buscarCarrinhoPorId(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletarCarrinho(@PathVariable Long id) {
+        carrinhoService.deletarCarrinhoPorId(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{idCarrinho}/itens/{idProduto}")
