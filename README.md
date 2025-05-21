@@ -31,11 +31,11 @@ Desenvolver uma API REST para uma Loja Virtual Simplificada que permita:
 ### Carrinho
 
 - Criar carrinho
-- Adicionar item (produto + quantidade)
-- Remover item
-- Visualizar itens do carrinho
+- Adicionar produto (produto + quantidade)
+- Remover produto
+- Visualizar produtos do carrinho
 - Visualizar total da compra
-- Finalizar carrinho (limpar itens)
+- Finalizar carrinho (limpar produtos)
 
 ---
 

@@ -1,6 +1,5 @@
 package onhardware.controller;
 
-
 import jakarta.validation.Valid;
 import onhardware.DTO.ProdutoDTO;
 import onhardware.service.ProdutoService;
@@ -44,13 +43,4 @@ public class ProdutoController {
         produtoService.deletarProdutoPorId(id);
         return ResponseEntity.noContent().build();
     }
-
 }
-
-/*
-200 OK — é o mais comum para atualizar um recurso existente e retornar a representação atualizada.
-
-201 Created — usado somente se a atualização criou um recurso novo (por exemplo, se o recurso com aquele id não existia e foi criado durante o PUT).
-
-204 No Content — também usado quando a atualização ocorreu com sucesso, mas o servidor não retorna conteúdo no corpo.
-*/

@@ -13,19 +13,19 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "itens_carrinho")
-public class ItemCarrinho {
+@Table(name = "produtos_carrinho")
+public class ProdutoCarrinho {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idItemCarrinho;
+    private Long idProdutoCarrinho;
 
-    // Muitos itens podem estar relacionados a um mesmo produto.
+    // Muitos produtos podem estar relacionados a um mesmo produto.
     @ManyToOne
     @JoinColumn(nullable = false)
     private Produto produto;
 
-    // Muitos itens pertencem a um único carrinho.
+    // Muitos produtos pertencem a um único carrinho.
     @ManyToOne
     @JoinColumn(nullable = false)
     private Carrinho carrinho;
@@ -36,12 +36,3 @@ public class ItemCarrinho {
     @Column(nullable = false)
     private BigDecimal precoTotal;
 }
-
-/*
-
-OneToOne:	    Pessoa - Endereço	    / Um para um
-OneToMany:	    Carrinho - Itens	    / Um para muitos (um lado)
-ManyToOne:	    Item - Carrinho	        / Muitos para um (outro lado)
-ManyToMany:	    Aluno - Turma	        / Muitos para muitos, com tabela intermediária
-
- */
