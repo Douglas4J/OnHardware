@@ -1,5 +1,7 @@
 package onhardware.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,8 +16,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProdutoCarrinhoDTO {
+
+    @JsonIgnore
     private Long idProdutoCarrinho;
 
+    @JsonProperty("produto")
     @NotNull(message = "O produto é obrigatório.")
     private ProdutoDTO produtoDTO;
 
