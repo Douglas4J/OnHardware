@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -21,16 +22,14 @@ public class CarrinhoDTO {
     private Long idCarrinho;
 
     @NotNull(message = "A lista de produtos é obrigatória.")
-    @Schema(
-            description = "Lista de produtos no carrinho (inicialmente vazia)",
-            example = "[]"
-    )
+    @Schema(description = "Lista de produtos no carrinho (inicialmente vazia)", example = "[]")
     private List<@Valid ProdutoCarrinhoDTO> produtos;
 
     @NotNull(message = "O total do carrinho é obrigatório.")
-    @Schema(
-            description = "Valor total do carrinho (inicialmente zero)",
-            example = "0.00"
-    )
+    @Schema(description = "Valor total do carrinho (inicialmente zero)", example = "0.00")
     private BigDecimal valorTotalCarrinho;
+
+    private LocalDateTime dataCompraFinalizada;
+
+    private boolean finalizado;
 }

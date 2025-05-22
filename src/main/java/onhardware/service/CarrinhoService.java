@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,7 @@ public class CarrinhoService {
         Carrinho carrinho = Carrinho.builder()
                 .idCarrinho(carrinhoDTO.getIdCarrinho())
                 .valorTotalCarrinho(carrinhoDTO.getValorTotalCarrinho())
+                .finalizado(false)
                 .build();
 
         List<ProdutoCarrinho> produtos = new ArrayList<>();
@@ -60,13 +62,18 @@ public class CarrinhoService {
                 .idCarrinho(carrinho.getIdCarrinho())
                 .valorTotalCarrinho(carrinho.getValorTotalCarrinho())
                 .produtos(produtosDTO)
+                .dataCompraFinalizada(carrinho.getDataCompraFinalizada())
+                .finalizado(carrinho.isFinalizado())
                 .build();
     }
 
-    public CarrinhoDTO cadastrarCarrinho(CarrinhoDTO carrinhoDTO) {
-        Carrinho carrinho = paraEntity(carrinhoDTO);
-        Carrinho carrinhoSalvo = carrinhoRepository.save(carrinho);
+    public CarrinhoDTO cadastrarCarrinho() {
+        Carrinho carrinho = new Carrinho();
+        carrinho.setProdutos(new ArrayList<>());
+        carrinho.setValorTotalCarrinho(BigDecimal.ZERO);
+        carrinho.setFinalizado(false);
 
+        Carrinho carrinhoSalvo = carrinhoRepository.save(carrinho);
         return paraDTO(carrinhoSalvo);
     }
 
@@ -225,15 +232,11 @@ public class CarrinhoService {
         }
         Carrinho carrinho = optionalCarrinho.get();
 
-        carrinho.getProdutos().clear();
-
-        carrinho.setValorTotalCarrinho(BigDecimal.ZERO);
+        carrinho.setDataCompraFinalizada(LocalDateTime.now());
+        carrinho.setFinalizado(true);
 
         Carrinho carrinhoFinalizado = carrinhoRepository.save(carrinho);
 
         return paraDTO(carrinhoFinalizado);
-
     }
-
-
 }

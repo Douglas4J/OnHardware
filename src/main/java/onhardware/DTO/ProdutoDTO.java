@@ -1,5 +1,7 @@
 package onhardware.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -13,6 +15,7 @@ import java.math.BigDecimal;
 @Builder
 public class ProdutoDTO {
 
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "ID do produto (gerado automaticamente)")
     private Long idProduto;
 
     @NotBlank(message = "O nome do produto é obrigatório.")
