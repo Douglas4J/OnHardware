@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import onhardware.DTO.AdicionarProdutoDTO;
 import onhardware.DTO.CarrinhoDTO;
-import onhardware.DTO.FinalizarCompraDTO;
 import onhardware.service.CarrinhoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,21 +23,24 @@ public class CarrinhoController {
 
     @Operation(summary = "Criar novo carrinho")
     @PostMapping("/criar-carrinho")
-    public ResponseEntity<CarrinhoDTO> criarCarrinho(@Valid @RequestBody CarrinhoDTO carrinhoDTO) {
-        CarrinhoDTO carrinhoCadastrado = carrinhoService.cadastrarCarrinho(carrinhoDTO);
+    public ResponseEntity<CarrinhoDTO> criarCarrinho() {
+        CarrinhoDTO carrinhoCadastrado = carrinhoService.cadastrarCarrinho();
         return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoCadastrado);
+        // POST 201 Created
     }
 
     @Operation(summary = "Listar todos os carrinhos")
     @GetMapping("/listar-carrinhos")
     public ResponseEntity<List<CarrinhoDTO>> listarCarrinhos() {
         return ResponseEntity.ok(carrinhoService.listarTodosCarrinhos());
+        // GET 200 OK
     }
 
     @Operation(summary = "Buscar carrinho específico")
     @GetMapping("/buscar-carrinho/{id}")
     public ResponseEntity<CarrinhoDTO> buscarCarrinho(@PathVariable Long id) {
         return ResponseEntity.ok(carrinhoService.buscarCarrinhoPorId(id));
+        // GET 200 OK
     }
 
     @Operation(summary = "Excluir carrinho")
@@ -46,36 +48,27 @@ public class CarrinhoController {
     public ResponseEntity<Void> deletarCarrinho(@PathVariable Long id) {
         carrinhoService.deletarCarrinhoPorId(id);
         return ResponseEntity.noContent().build();
+        // 204 No Content
     }
 
     @Operation(summary = "Adicionar produtos a um carrinho")
-    @PostMapping("/adicionar-produto-carrinho/{idCarrinho}/produtos")
-    public ResponseEntity<CarrinhoDTO> adicionarProdutoAoCarrinho(@PathVariable Long idCarrinho,
-                                                                  @Valid @RequestBody AdicionarProdutoDTO dto) {
-
-        CarrinhoDTO carrinhoAtualizado = carrinhoService.adicionarProduto(idCarrinho, dto.getIdProduto(), dto.getQuantidade());
-        return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoAtualizado);
+    @PutMapping("/adicionar-produto-carrinho/{idCarrinho}/produtos")
+    public ResponseEntity<CarrinhoDTO> adicionarProdutoAoCarrinho(@PathVariable Long idCarrinho, @Valid @RequestBody AdicionarProdutoDTO dto) {
+        return ResponseEntity.ok(carrinhoService.adicionarProduto(idCarrinho, dto.getIdProduto(), dto.getQuantidade()));
+        // 200 OK
     }
 
     @Operation(summary = "Deletar produto do carrinho")
-    @DeleteMapping("/deletar-carrinho/{idCarrinho}/produtos/{idProdutoCarrinho}")
-    public ResponseEntity<CarrinhoDTO> removerProdutoDoCarrinho(@PathVariable Long idCarrinho,
-                                                             @PathVariable Long idProdutoCarrinho) {
-        CarrinhoDTO carrinhoAtualizado = carrinhoService.removerProduto(idCarrinho, idProdutoCarrinho);
-        return ResponseEntity.ok(carrinhoAtualizado);
+    @PutMapping("/deletar-carrinho/{idCarrinho}/produtos/{idProdutoCarrinho}")
+    public ResponseEntity<CarrinhoDTO> removerProdutoDoCarrinho(@PathVariable Long idCarrinho, @PathVariable Long idProdutoCarrinho) {
+        return ResponseEntity.ok(carrinhoService.removerProduto(idCarrinho, idProdutoCarrinho));
+        // 200 OK
     }
 
     @Operation(summary = "Finalizar a compra de um carrinho")
-    @PostMapping("/finalizar-compra/{idCarrinho}")
-    public ResponseEntity<CarrinhoDTO> finalizarCompra(@PathVariable("idCarrinho") Long idCarrinho,
-                                                       @RequestBody @Valid FinalizarCompraDTO finalizarCompraDTO) {
-
-        if (!finalizarCompraDTO.isConfirmacao()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        CarrinhoDTO carrinhoFinalizado = carrinhoService.finalizarCompra(idCarrinho);
-        return ResponseEntity.status(HttpStatus.CREATED).body(carrinhoFinalizado);
+    @PutMapping("/finalizar-compra/{idCarrinho}")
+    public ResponseEntity<CarrinhoDTO> finalizarCompra(@PathVariable("idCarrinho") Long idCarrinho) {
+        return ResponseEntity.ok(carrinhoService.finalizarCompra(idCarrinho));
+        // 200 OK
     }
-
 }

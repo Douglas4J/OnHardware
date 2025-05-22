@@ -25,24 +25,28 @@ public class ProdutoController {
     public ResponseEntity<ProdutoDTO> criarProdutos(@Valid @RequestBody ProdutoDTO produtoDTO) {
         ProdutoDTO produtoCadastrado = produtoService.cadastrarProduto(produtoDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(produtoCadastrado);
+        // POST 201 Created
     }
 
     @Operation(summary = "Listar todos os produtos")
     @GetMapping("/listar-produtos")
     public ResponseEntity<List<ProdutoDTO>> listarProdutos() {
         return ResponseEntity.ok(produtoService.listarTodosProdutos());
+        // GET 200 OK
     }
 
     @Operation(summary = "Buscar produto específico")
     @GetMapping("/buscar-produto/{id}")
     public ResponseEntity<ProdutoDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(produtoService.buscarProdutoPorId(id));
+        // GET 200 OK
     }
 
     @Operation(summary = "Editar produto")
     @PutMapping("/atualizar-produto/{id}")
     public ResponseEntity<ProdutoDTO> atualizarProduto(@PathVariable Long id, @Valid @RequestBody ProdutoDTO produtoDTO) {
         return ResponseEntity.ok(produtoService.atualizarProdutoPorId(id, produtoDTO));
+        // 200 OK
     }
 
     @Operation(summary = "Excluir produto")
@@ -50,5 +54,6 @@ public class ProdutoController {
     public ResponseEntity<Void> deletarProduto(@PathVariable Long id) {
         produtoService.deletarProdutoPorId(id);
         return ResponseEntity.noContent().build();
+        // 204 No Content
     }
 }

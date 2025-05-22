@@ -42,4 +42,9 @@ public class Carrinho {
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataRegistroCarrinho;
+
+    @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+    private LocalDateTime dataCompraFinalizada;
+
+    private boolean finalizado = false;
 }
